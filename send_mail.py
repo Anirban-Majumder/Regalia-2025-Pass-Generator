@@ -6,7 +6,8 @@ import os
 from email.mime.multipart import MIMEMultipart
 import csv
 import qrcode
-
+import pyqrcode
+import json
 from pass_gen import pass_gen
 
 load_dotenv()
@@ -29,6 +30,14 @@ server.starttls()
 server.login(sender, app_password)
 print("Login successful")
 
+
+
+def makeQR(data):
+    qr = pyqrcode.create(data)
+    qr.png('qr_code.png', scale=30, module_color='#03045E', background='#538EFF')
+    return qr.get_png_size(30)
+
+
 # Open the log file in write mode to clear any existing content
 with open("log.txt", "w") as log:
     pass  # Clears the existing content of log.txt
@@ -48,7 +57,8 @@ with open("data.csv", "r", newline="", encoding="utf-8") as csvfile:
             print(f"Processing row {i}: {row}")
             try:
                 # Add data to the QR code
-                qr.add_data([row[1], row[2]])
+                # qr.add_data([row[0], row[2], row[3]])
+                qr.add_data(json.dumps({"name": row[0], "phone":row[1], "email": row[2], "roll": row[3]}))
                 qr.make(fit=True)
 
                 # Create an image from the QR code
