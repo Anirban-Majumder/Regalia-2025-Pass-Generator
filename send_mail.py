@@ -2,8 +2,10 @@ from email.mime.image import MIMEImage
 import smtplib
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
+from pandas import read_csv
 import os
 from email.mime.multipart import MIMEMultipart
+from PIL import Image, ImageDraw, ImageFont
 import csv
 import qrcode
 import pyqrcode
@@ -14,11 +16,13 @@ load_dotenv()
 # Set up the email parameters
 sender = "rcciit.regalia.official@gmail.com"
 subject = "Regalia 2024 - Please go through the email carefully"
-
+template = Image.open("pass_template.png")
+detailsFont = ImageFont.truetype("Poppins-Regular.ttf",150)
+allowedFont = ImageFont.truetype("Poppins-SemiBold.ttf",150)
 qr = qrcode.QRCode(
     version=1,
     error_correction=qrcode.constants.ERROR_CORRECT_L,
-    box_size=10,
+    box_size=30,
     border=4,
 )
 
@@ -34,7 +38,7 @@ print("Login successful")
 
 def makeQR(data):
     qr = pyqrcode.create(data)
-    qr.png('qr_code.png', scale=30, module_color='#03045E', background='#538EFF')
+    qr.png('qr_code.png', scale=30, module_color='#151515', background='#c9a747')
     return qr.get_png_size(30)
 
 
@@ -58,38 +62,55 @@ with open("data.csv", "r", newline="", encoding="utf-8") as csvfile:
             try:
                 # Add data to the QR code
                 # qr.add_data([row[0], row[2], row[3]])
-                qr.add_data(json.dumps({"name": row[0], "phone":row[1], "email": row[2], "roll": row[3]}))
-                qr.make(fit=True)
+                qr_data = json.dumps({"name": row[0], "phone":row[1], "email": row[2], "roll": row[3]})
+                cert = template.copy()
+                draw = ImageDraw.Draw(cert)
+                #qrcodes
+                size = makeQR(qr_data)
+                pos = ((1600 - int(size/2)), 160)
+                cert.paste(Image.open('qr_code.png'), pos)
+                #name
+                nameFont = 400;
+                w = draw.textlength(row[0].upper(),ImageFont.truetype("Poppins-Bold.ttf",nameFont))
+                difference = w - (1682-440)
 
-                # Create an image from the QR code
-                img = qr.make_image(fill_color="black", back_color="white")
-
-                # Save the image as a PNG file
-                img.save("qr_code.png")
-
-                # resets qr code data
-                qr.clear()
+                if(difference > 0 and difference <= 100) : 
+                    nameFont = 350
+                elif (difference > 100 and difference <= 250) :
+                    nameFont = 300
+                elif (difference > 250 and difference <= 400) :
+                    nameFont = 250
+                elif(difference > 400) :
+                    nameFont = 200
+                else :
+                    nameFont = 400
+                draw.text(xy = (620,2550),text=row[0].upper(),fill='black',font=ImageFont.truetype("Poppins-Bold.ttf",nameFont))
+                #email
+                draw.text(xy = (620,2950),text=row[2],fill='black',font=detailsFont)
+                #roll
+                draw.text(xy = (620,3150),text=row[3].upper(),fill='black',font=detailsFont)
+                cert.save("pass.png");
 
                 # Open the image file and read its contents
-                with open("qr_code.png", "rb") as f:
+                with open("pass.png", "rb") as f:
                     img_data = f.read()
 
                 # Create the message
-                msg = MIMEMultipart()
-                msg["From"] = sender
-                msg["To"] = row[2]
-                msg["Subject"] = subject
+                # msg = MIMEMultipart()
+                # msg["From"] = sender
+                # msg["To"] = row[2]
+                # msg["Subject"] = subject
 
-                # Attach email content and QR code image
-                msg.attach(MIMEText(pass_gen(row[0], row[1], row[2]), "html"))
-                msg.attach(MIMEImage(img_data, name="pass_qr.png"))
+                # # Attach email content and QR code image
+                # msg.attach(MIMEText(pass_gen(row[0], row[1], row[2]), "html"))
+                # msg.attach(MIMEImage(img_data, name="pass_qr.png"))
 
-                # Send the message
-                server.sendmail(sender, row[2], msg.as_string())
-                print("sent -> " + row[2])
-                # Append a new line to the file with the index and email address
-                log.write(f"{i}: sent -> {row[2]}\n")
-                email_count += 1  # Increment email count
+                # # Send the message
+                # server.sendmail(sender, row[2], msg.as_string())
+                # print("sent -> " + row[2])
+                # # Append a new line to the file with the index and email address
+                # log.write(f"{i}: sent -> {row[2]}\n")
+                # email_count += 1  # Increment email count
 
             except Exception as e:
                 print("failed -> " + row[2] + str(e))
