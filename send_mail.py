@@ -17,12 +17,12 @@ load_dotenv()
 sender = "rcciit.regalia.official@gmail.com"
 subject = "Regalia 2024 - Please go through the email carefully"
 template = Image.open("pass_template.png")
-detailsFont = ImageFont.truetype("Poppins-Regular.ttf",130)
-allowedFont = ImageFont.truetype("Poppins-SemiBold.ttf",130)
+detailsFont = ImageFont.truetype("Poppins-Regular.ttf",40)
+allowedFont = ImageFont.truetype("Poppins-SemiBold.ttf",40)
 qr = qrcode.QRCode(
     version=1,
     error_correction=qrcode.constants.ERROR_CORRECT_L,
-    box_size=30,
+    box_size=20,
     border=4,
 )
 
@@ -39,8 +39,8 @@ print("Login successful")
 
 def makeQR(data):
     qr = pyqrcode.create(data)
-    qr.png('qr_code.png', scale=30, module_color='#151515' , background='#f4ce42')
-    return qr.get_png_size(30)
+    qr.png('qr_code.png', scale=10, module_color='#151515' , background='#f4ce42')
+    return qr.get_png_size(12)
 
 
 # Open the log file in write mode to clear any existing content
@@ -68,36 +68,39 @@ with open("data.csv", "r", newline="", encoding="utf-8") as csvfile:
                 draw = ImageDraw.Draw(cert)
                 #qrcodes
                 size = makeQR(qr_data)
-                pos = ((1600 - int(size/2)), 160)
+                print(size)
+                pos = ((600 - int(size/2)), 50)
                 cert.paste(Image.open('qr_code.png'), pos)
                 #name
-                nameFont = 400;
+                nameFont = 150
                 w = draw.textlength(row[0].upper(),ImageFont.truetype("Poppins-Bold.ttf",nameFont))
                 print(w)
                 difference = w - (1682-440)
                 print(difference)
-                if(difference > 0 and difference <= 2000) : 
-                    nameFont = 250
-                elif (difference > 2000 and difference <= 3000) :
-                    nameFont = 220
+                if(difference > 0 and difference <= 500) : 
+                    nameFont = 70
+                elif(difference > 500 and difference <= 1000) : 
+                    nameFont = 55
+                elif (difference > 1000 and difference <= 1500) :
+                    nameFont = 45
                 elif (difference > 3000 and difference <= 4000) :
-                    nameFont = 180
+                    nameFont = 150
                 elif(difference > 4000 and difference <= 4500) :
-                    nameFont = 160
+                    nameFont = 150
                 elif(difference > 4500 and difference <= 5000) :
                     nameFont = 150
                 elif(difference > 5000 and difference <=5500) :
-                    nameFont = 140
+                    nameFont = 150
                 elif(difference > 5500 and difference <=6000) :
-                    nameFont = 133
+                    nameFont = 150
                 elif(difference > 6000 and difference <= 7000):
-                    nameFont = 130
-                draw.text(xy = (550,2550),text=row[0].upper(),fill='black',font=ImageFont.truetype("Poppins-Bold.ttf",nameFont))
+                    nameFont = 150
+                draw.text(xy = (180,900),text=row[0].upper(),fill='black',font=ImageFont.truetype("Poppins-Bold.ttf",nameFont))
                 #email
-                draw.text(xy = (550,2950),text=row[2],fill='black',font=detailsFont)
+                draw.text(xy = (180,1000),text=row[2],fill='black',font=detailsFont)
                 #roll
-                draw.text(xy = (550,3150),text=row[3].upper(),fill='black',font=detailsFont)
-                cert.save("pass.png");
+                draw.text(xy = (180,1070),text=row[3].upper(),fill='black',font=detailsFont)
+                cert.save("pass.png")
 
                 # Open the image file and read its contents
                 with open("pass.png", "rb") as f:
@@ -114,7 +117,7 @@ with open("data.csv", "r", newline="", encoding="utf-8") as csvfile:
                 msg.attach(MIMEImage(img_data, name="pass_qr.png"))
 
                 # Send the message
-                server.sendmail(sender, row[2], msg.as_string())
+                # server.sendmail(sender, row[2], msg.as_string())
                 print("sent -> " + row[2])
                 # Append a new line to the file with the index and email address
                 log.write(f"{i}: sent -> {row[2]}\n")
