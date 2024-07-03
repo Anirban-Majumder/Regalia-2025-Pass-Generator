@@ -92,7 +92,7 @@ with open("data.csv", "r", newline="", encoding="utf-8") as csvfile:
                 elif(difference > 5000 and difference <=5500) :
                     nameFont = 150
                 elif(difference > 5500 and difference <=6000) :
-                    nameFont = 150
+                    nameFont = 160
                 elif(difference > 6000 and difference <= 7000):
                     nameFont = 150
                 draw.text(xy = (180,900),text=row[0].upper(),fill='black',font=ImageFont.truetype("Poppins-Bold.ttf",nameFont))
