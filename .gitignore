@@ -4,3 +4,5 @@
 log.txt
 qr_code.png
 /passes
+failure_log.txt
+success_log.txt
