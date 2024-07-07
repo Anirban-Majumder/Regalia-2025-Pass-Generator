@@ -3,6 +3,6 @@
 .env
 log.txt
 qr_code.png
-/passes
+/passes/
 failure_log.txt
 success_log.txt
